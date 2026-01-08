@@ -1,6 +1,6 @@
 # Raffle Backoffice
 
-A deterministic (no-AI) raffle ticket chatbot backoffice system using Meta WhatsApp Cloud API.
+A deterministic raffle ticket chatbot backoffice system using Meta WhatsApp Cloud API.
 
 ## Features
 
