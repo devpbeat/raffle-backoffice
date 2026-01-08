@@ -32,6 +32,7 @@ urlpatterns = [
 
     # API endpoints
     path('api/', include('apps.raffles.urls')),
+    path('api/whatsapp/', include('apps.whatsapp.api_urls')),
 
     # i18n language switching
     path('i18n/', include('django.conf.urls.i18n')),

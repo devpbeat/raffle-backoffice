@@ -107,3 +107,19 @@ TXT_MENU_OPTIONS = """¡Bienvenido!
 1. Escribe 'rifas' para explorar rifas activas
 2. Escribe 'pedidos' para ver tus pedidos
 3. Escribe 'ayuda' para asistencia"""
+
+# Payment confirmation (sent when admin confirms payment)
+MSG_PAYMENT_CONFIRMED = """🎉 *¡PAGO CONFIRMADO!*
+
+¡Felicidades {name}! Tu pago ha sido verificado.
+
+*Rifa:* {raffle_title}
+*Números:* {numbers}
+*Cantidad:* {qty} boleto(s)
+*Total Pagado:* {currency} {total}
+
+Tus números están confirmados para el sorteo.
+
+¡Mucha suerte! 🍀
+
+Escribe 'menu' si necesitas algo más."""

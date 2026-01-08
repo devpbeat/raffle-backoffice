@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
 from apps.whatsapp.models import WhatsAppContact, InboundMessage
 
 
@@ -18,18 +19,19 @@ class WhatsAppContactAdmin(admin.ModelAdmin):
     ordering = ['-last_interaction_at']
 
     fieldsets = (
-        ('Contact Information', {
+        (_('Información del Contacto'), {
             'fields': ('wa_id', 'name')
         }),
-        ('State & Context', {
+        (_('Estado y Contexto'), {
             'fields': ('state', 'context')
         }),
-        ('Timestamps', {
+        (_('Fechas'), {
             'fields': ('last_interaction_at', 'created_at', 'updated_at'),
             'classes': ('collapse',)
         }),
     )
 
+    @admin.display(description=_('Estado'))
     def state_badge(self, obj):
         colors = {
             'IDLE': 'gray',
@@ -45,14 +47,13 @@ class WhatsAppContactAdmin(admin.ModelAdmin):
             color,
             obj.get_state_display()
         )
-    state_badge.short_description = 'State'
 
 
 @admin.register(InboundMessage)
 class InboundMessageAdmin(admin.ModelAdmin):
     list_display = [
         'wa_message_id',
-        'contact_link',
+        'contact_display',
         'msg_type',
         'text_preview',
         'processed',
@@ -65,29 +66,25 @@ class InboundMessageAdmin(admin.ModelAdmin):
     date_hierarchy = 'received_at'
 
     fieldsets = (
-        ('Message Information', {
+        (_('Información del Mensaje'), {
             'fields': ('wa_message_id', 'contact', 'msg_type', 'text', 'media_id')
         }),
-        ('Processing', {
+        (_('Procesamiento'), {
             'fields': ('processed', 'received_at')
         }),
-        ('Raw Data', {
+        (_('Datos Crudos'), {
             'fields': ('raw_payload',),
             'classes': ('collapse',)
         }),
     )
 
-    def contact_link(self, obj):
-        return format_html(
-            '<a href="/admin/whatsapp/whatsappcontact/{}/change/">{}</a>',
-            obj.contact.id,
-            obj.contact.wa_id
-        )
-    contact_link.short_description = 'Contact'
+    @admin.display(description=_('Contacto'))
+    def contact_display(self, obj):
+        return obj.contact.name or obj.contact.wa_id
 
+    @admin.display(description=_('Vista Previa'))
     def text_preview(self, obj):
         if obj.text:
             preview = obj.text[:50]
             return preview + '...' if len(obj.text) > 50 else preview
         return '-'
-    text_preview.short_description = 'Text'

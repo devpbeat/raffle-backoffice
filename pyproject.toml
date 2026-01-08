@@ -5,7 +5,7 @@ description = "Deterministic raffle ticket chatbot backoffice using Meta WhatsAp
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "django>=6.0.1",
+    "django>=5.1,<6.0",
     "djangorestframework>=3.15.0",
     "django-jazzmin>=3.0.0",
     "django-filter>=24.0",

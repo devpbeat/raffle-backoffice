@@ -145,3 +145,44 @@ def send_interactive_list(to, body_text, button_text, sections):
         }
     }
     return send_message(payload)
+
+
+def send_payment_confirmation(order):
+    """
+    Send payment confirmation message to customer via WhatsApp.
+
+    Args:
+        order: Order instance that was just paid
+
+    Returns:
+        Response JSON from WhatsApp API or None if failed
+    """
+    from apps.whatsapp.services.messages_es import MSG_PAYMENT_CONFIRMED
+    
+    contact = order.contact
+    raffle = order.raffle
+    
+    # Format ticket numbers
+    numbers = order.ticket_numbers
+    if len(numbers) <= 10:
+        numbers_str = ', '.join(map(str, numbers))
+    else:
+        numbers_str = f"{', '.join(map(str, numbers[:10]))}... (+{len(numbers)-10} más)"
+    
+    # Build the confirmation message
+    message = MSG_PAYMENT_CONFIRMED.format(
+        name=contact.name or 'Cliente',
+        raffle_title=raffle.title,
+        numbers=numbers_str,
+        qty=order.qty,
+        currency=raffle.currency,
+        total=order.total_amount,
+    )
+    
+    try:
+        result = send_text(contact.wa_id, message)
+        logger.info(f"Payment confirmation sent to {contact.wa_id} for Order #{order.id}")
+        return result
+    except WhatsAppAPIError as e:
+        logger.error(f"Failed to send payment confirmation to {contact.wa_id}: {e}")
+        return None

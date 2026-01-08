@@ -5,13 +5,21 @@ from rest_framework.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from apps.raffles.models import Raffle, Order, TicketNumber, OrderStatus
+from apps.whatsapp.models import WhatsAppContact
 from apps.raffles.serializers import (
     RaffleSerializer,
     OrderSerializer,
     TicketNumberSerializer,
     ConfirmPaymentSerializer,
+    ReserveSerializer,
 )
-from apps.raffles.services import confirm_paid, release_order_reservations, ReservationError
+from apps.raffles.services import (
+    confirm_paid, 
+    release_order_reservations, 
+    ReservationError,
+    reserve_random,
+    reserve_specific
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -48,6 +56,53 @@ class RaffleViewSet(viewsets.ModelViewSet):
             'reserved_count': raffle.reserved_count,
             'available_numbers': list(available_tickets),
         })
+
+    @action(detail=True, methods=['post'])
+    def reserve(self, request, pk=None):
+        """
+        Reserve tickets for a contact.
+        POST /api/raffles/{id}/reserve/
+        Body: 
+        {
+            "wa_id": "123123123",
+            "type": "random" | "specific",
+            "qty": 5,          # if random
+            "numbers": [1, 2]  # if specific
+        }
+        """
+        raffle = self.get_object()
+        serializer = ReserveSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+        wa_id = data['wa_id']
+        reservation_type = data['type']
+
+        try:
+            contact = WhatsAppContact.objects.get(wa_id=wa_id)
+        except WhatsAppContact.DoesNotExist:
+            return Response(
+                {'error': f'Contact with wa_id {wa_id} not found. Please create contact first.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        try:
+            if reservation_type == 'random':
+                order = reserve_random(raffle.id, data['qty'], contact)
+            else:
+                order = reserve_specific(raffle.id, data['numbers'], contact)
+
+            return Response(
+                OrderSerializer(order).data,
+                status=status.HTTP_201_CREATED
+            )
+
+        except ReservationError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
 
     @action(detail=True, methods=['get'])
     def tickets(self, request, pk=None):

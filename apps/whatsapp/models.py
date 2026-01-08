@@ -1,33 +1,35 @@
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class ContactState(models.TextChoices):
-    IDLE = 'IDLE', 'Idle'
-    BROWSING = 'BROWSING', 'Browsing Raffles'
-    SELECTING_NUMBERS = 'SELECTING_NUMBERS', 'Selecting Numbers'
-    CONFIRMING_ORDER = 'CONFIRMING_ORDER', 'Confirming Order'
-    AWAITING_PAYMENT = 'AWAITING_PAYMENT', 'Awaiting Payment'
-    UPLOADING_PROOF = 'UPLOADING_PROOF', 'Uploading Payment Proof'
+    IDLE = 'IDLE', _('Inactivo')
+    BROWSING = 'BROWSING', _('Explorando Rifas')
+    SELECTING_NUMBERS = 'SELECTING_NUMBERS', _('Seleccionando Números')
+    CONFIRMING_ORDER = 'CONFIRMING_ORDER', _('Confirmando Orden')
+    AWAITING_PAYMENT = 'AWAITING_PAYMENT', _('Esperando Pago')
+    UPLOADING_PROOF = 'UPLOADING_PROOF', _('Subiendo Comprobante')
 
 
 class WhatsAppContact(models.Model):
-    wa_id = models.CharField(max_length=50, unique=True, db_index=True, verbose_name='WhatsApp ID')
-    name = models.CharField(max_length=255, null=True, blank=True)
+    wa_id = models.CharField(_('ID de WhatsApp'), max_length=50, unique=True, db_index=True)
+    name = models.CharField(_('nombre'), max_length=255, null=True, blank=True)
     state = models.CharField(
+        _('estado'),
         max_length=30,
         choices=ContactState.choices,
         default=ContactState.IDLE,
         db_index=True
     )
-    context = models.JSONField(default=dict, blank=True)
-    last_interaction_at = models.DateTimeField(default=timezone.now, db_index=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    context = models.JSONField(_('contexto'), default=dict, blank=True)
+    last_interaction_at = models.DateTimeField(_('última interacción'), default=timezone.now, db_index=True)
+    created_at = models.DateTimeField(_('fecha de creación'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('fecha de actualización'), auto_now=True)
 
     class Meta:
-        verbose_name = 'WhatsApp Contact'
-        verbose_name_plural = 'WhatsApp Contacts'
+        verbose_name = _('Contacto de WhatsApp')
+        verbose_name_plural = _('Contactos de WhatsApp')
         ordering = ['-last_interaction_at']
         indexes = [
             models.Index(fields=['-last_interaction_at']),
@@ -50,40 +52,42 @@ class WhatsAppContact(models.Model):
 
 
 class MessageType(models.TextChoices):
-    TEXT = 'text', 'Text'
-    IMAGE = 'image', 'Image'
-    DOCUMENT = 'document', 'Document'
-    AUDIO = 'audio', 'Audio'
-    VIDEO = 'video', 'Video'
-    STICKER = 'sticker', 'Sticker'
-    LOCATION = 'location', 'Location'
-    CONTACTS = 'contacts', 'Contacts'
-    INTERACTIVE = 'interactive', 'Interactive'
-    BUTTON = 'button', 'Button'
-    UNKNOWN = 'unknown', 'Unknown'
+    TEXT = 'text', _('Texto')
+    IMAGE = 'image', _('Imagen')
+    DOCUMENT = 'document', _('Documento')
+    AUDIO = 'audio', _('Audio')
+    VIDEO = 'video', _('Video')
+    STICKER = 'sticker', _('Sticker')
+    LOCATION = 'location', _('Ubicación')
+    CONTACTS = 'contacts', _('Contactos')
+    INTERACTIVE = 'interactive', _('Interactivo')
+    BUTTON = 'button', _('Botón')
+    UNKNOWN = 'unknown', _('Desconocido')
 
 
 class InboundMessage(models.Model):
-    wa_message_id = models.CharField(max_length=255, unique=True, db_index=True, verbose_name='WhatsApp Message ID')
+    wa_message_id = models.CharField(_('ID de mensaje de WhatsApp'), max_length=255, unique=True, db_index=True)
     contact = models.ForeignKey(
         WhatsAppContact,
         on_delete=models.CASCADE,
-        related_name='messages'
+        related_name='messages',
+        verbose_name=_('contacto')
     )
     msg_type = models.CharField(
+        _('tipo de mensaje'),
         max_length=20,
         choices=MessageType.choices,
         default=MessageType.TEXT
     )
-    text = models.TextField(null=True, blank=True)
-    media_id = models.CharField(max_length=255, null=True, blank=True)
-    raw_payload = models.JSONField(default=dict, blank=True)
-    received_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    processed = models.BooleanField(default=False, db_index=True)
+    text = models.TextField(_('texto'), null=True, blank=True)
+    media_id = models.CharField(_('ID de media'), max_length=255, null=True, blank=True)
+    raw_payload = models.JSONField(_('payload crudo'), default=dict, blank=True)
+    received_at = models.DateTimeField(_('fecha de recepción'), auto_now_add=True, db_index=True)
+    processed = models.BooleanField(_('procesado'), default=False, db_index=True)
 
     class Meta:
-        verbose_name = 'Inbound Message'
-        verbose_name_plural = 'Inbound Messages'
+        verbose_name = _('Mensaje Entrante')
+        verbose_name_plural = _('Mensajes Entrantes')
         ordering = ['-received_at']
         indexes = [
             models.Index(fields=['-received_at']),

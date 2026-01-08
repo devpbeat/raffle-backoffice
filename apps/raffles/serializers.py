@@ -88,3 +88,19 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class ConfirmPaymentSerializer(serializers.Serializer):
     payment_proof_media_id = serializers.CharField(required=False, allow_blank=True)
+
+
+class ReserveSerializer(serializers.Serializer):
+    wa_id = serializers.CharField()
+    type = serializers.ChoiceField(choices=['random', 'specific'])
+    qty = serializers.IntegerField(required=False, min_value=1)
+    numbers = serializers.ListField(child=serializers.IntegerField(), required=False)
+
+    def validate(self, data):
+        if data['type'] == 'random':
+            if not data.get('qty'):
+                raise serializers.ValidationError("qty is required for random reservation")
+        else:
+            if not data.get('numbers'):
+                raise serializers.ValidationError("numbers is required for specific reservation")
+        return data

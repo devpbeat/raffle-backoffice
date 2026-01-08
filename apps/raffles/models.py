@@ -1,29 +1,31 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from decimal import Decimal
 
 
 class Raffle(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    title = models.CharField(_('título'), max_length=255)
+    description = models.TextField(_('descripción'), blank=True)
     ticket_price = models.DecimalField(
+        _('precio del boleto'),
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
     )
-    currency = models.CharField(max_length=3, default='USD')
-    is_active = models.BooleanField(default=True, db_index=True)
-    min_number = models.IntegerField(default=1, validators=[MinValueValidator(1)])
-    max_number = models.IntegerField(validators=[MinValueValidator(1)])
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    draw_date = models.DateTimeField(null=True, blank=True)
-    winner_number = models.IntegerField(null=True, blank=True)
+    currency = models.CharField(_('moneda'), max_length=3, default='USD')
+    is_active = models.BooleanField(_('activo'), default=True, db_index=True)
+    min_number = models.IntegerField(_('número mínimo'), default=1, validators=[MinValueValidator(1)])
+    max_number = models.IntegerField(_('número máximo'), validators=[MinValueValidator(1)])
+    created_at = models.DateTimeField(_('fecha de creación'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('fecha de actualización'), auto_now=True)
+    draw_date = models.DateTimeField(_('fecha del sorteo'), null=True, blank=True)
+    winner_number = models.IntegerField(_('número ganador'), null=True, blank=True)
 
     class Meta:
-        verbose_name = 'Raffle'
-        verbose_name_plural = 'Raffles'
+        verbose_name = _('Rifa')
+        verbose_name_plural = _('Rifas')
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['is_active', '-created_at']),
@@ -59,19 +61,21 @@ class Raffle(models.Model):
 
 
 class TicketStatus(models.TextChoices):
-    AVAILABLE = 'AVAILABLE', 'Available'
-    RESERVED = 'RESERVED', 'Reserved'
-    SOLD = 'SOLD', 'Sold'
+    AVAILABLE = 'AVAILABLE', _('Disponible')
+    RESERVED = 'RESERVED', _('Reservado')
+    SOLD = 'SOLD', _('Vendido')
 
 
 class TicketNumber(models.Model):
     raffle = models.ForeignKey(
         Raffle,
         on_delete=models.CASCADE,
-        related_name='tickets'
+        related_name='tickets',
+        verbose_name=_('rifa')
     )
-    number = models.IntegerField(validators=[MinValueValidator(1)])
+    number = models.IntegerField(_('número'), validators=[MinValueValidator(1)])
     status = models.CharField(
+        _('estado'),
         max_length=20,
         choices=TicketStatus.choices,
         default=TicketStatus.AVAILABLE,
@@ -82,15 +86,16 @@ class TicketNumber(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='reserved_tickets'
+        related_name='reserved_tickets',
+        verbose_name=_('reservado por orden')
     )
-    reserved_until = models.DateTimeField(null=True, blank=True, db_index=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    reserved_until = models.DateTimeField(_('reservado hasta'), null=True, blank=True, db_index=True)
+    created_at = models.DateTimeField(_('fecha de creación'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('fecha de actualización'), auto_now=True)
 
     class Meta:
-        verbose_name = 'Ticket Number'
-        verbose_name_plural = 'Ticket Numbers'
+        verbose_name = _('Número de Boleto')
+        verbose_name_plural = _('Números de Boletos')
         ordering = ['raffle', 'number']
         unique_together = [['raffle', 'number']]
         indexes = [
@@ -117,45 +122,49 @@ class TicketNumber(models.Model):
 
 
 class OrderStatus(models.TextChoices):
-    DRAFT = 'DRAFT', 'Draft'
-    PENDING_PAYMENT = 'PENDING_PAYMENT', 'Pending Payment'
-    PAID = 'PAID', 'Paid'
-    CANCELLED = 'CANCELLED', 'Cancelled'
-    EXPIRED = 'EXPIRED', 'Expired'
+    DRAFT = 'DRAFT', _('Borrador')
+    PENDING_PAYMENT = 'PENDING_PAYMENT', _('Pendiente de Pago')
+    PAID = 'PAID', _('Pagado')
+    CANCELLED = 'CANCELLED', _('Cancelado')
+    EXPIRED = 'EXPIRED', _('Expirado')
 
 
 class Order(models.Model):
     raffle = models.ForeignKey(
         Raffle,
         on_delete=models.CASCADE,
-        related_name='orders'
+        related_name='orders',
+        verbose_name=_('rifa')
     )
     contact = models.ForeignKey(
         'whatsapp.WhatsAppContact',
         on_delete=models.CASCADE,
-        related_name='orders'
+        related_name='orders',
+        verbose_name=_('contacto')
     )
-    qty = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(50)])
+    qty = models.IntegerField(_('cantidad'), validators=[MinValueValidator(1), MaxValueValidator(50)])
     total_amount = models.DecimalField(
+        _('monto total'),
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.01'))]
     )
     status = models.CharField(
+        _('estado'),
         max_length=20,
         choices=OrderStatus.choices,
         default=OrderStatus.DRAFT,
         db_index=True
     )
-    payment_proof_media_id = models.CharField(max_length=255, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    paid_at = models.DateTimeField(null=True, blank=True)
-    expires_at = models.DateTimeField(null=True, blank=True, db_index=True)
+    payment_proof_media_id = models.CharField(_('ID de comprobante de pago'), max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(_('fecha de creación'), auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(_('fecha de actualización'), auto_now=True)
+    paid_at = models.DateTimeField(_('fecha de pago'), null=True, blank=True)
+    expires_at = models.DateTimeField(_('fecha de expiración'), null=True, blank=True, db_index=True)
 
     class Meta:
-        verbose_name = 'Order'
-        verbose_name_plural = 'Orders'
+        verbose_name = _('Orden')
+        verbose_name_plural = _('Órdenes')
         ordering = ['-created_at']
         indexes = [
             models.Index(fields=['status', '-created_at']),
@@ -193,18 +202,20 @@ class OrderTicket(models.Model):
     order = models.ForeignKey(
         Order,
         on_delete=models.CASCADE,
-        related_name='order_tickets'
+        related_name='order_tickets',
+        verbose_name=_('orden')
     )
     ticket = models.ForeignKey(
         TicketNumber,
         on_delete=models.CASCADE,
-        related_name='order_tickets'
+        related_name='order_tickets',
+        verbose_name=_('boleto')
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(_('fecha de creación'), auto_now_add=True)
 
     class Meta:
-        verbose_name = 'Order Ticket'
-        verbose_name_plural = 'Order Tickets'
+        verbose_name = _('Boleto de Orden')
+        verbose_name_plural = _('Boletos de Órdenes')
         unique_together = [['order', 'ticket']]
         indexes = [
             models.Index(fields=['order', 'ticket']),
