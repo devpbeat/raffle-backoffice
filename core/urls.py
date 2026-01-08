@@ -36,7 +36,8 @@ urlpatterns = [
         path('api/', include([
             path('raffles/', include('apps.raffles.urls')),
             path('whatsapp/', include('apps.whatsapp.api_urls')),
-            # Future: appointments, payments, etc. will be added here
+            path('appointments/', include('apps.appointments.urls')),
+            # Future: payments, etc. will be added here
         ])),
     ])),
 

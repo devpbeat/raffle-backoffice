@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.whatsapp',
     'apps.raffles',
+    'apps.appointments',
+    'apps.payments',
 ]
 
 MIDDLEWARE = [
@@ -195,7 +197,7 @@ JAZZMIN_SETTINGS = {
     'welcome_sign': 'Bienvenido al Panel de Administración de Rifas',
     'copyright': 'Rifas Backoffice',
     'language_chooser': True,
-    'search_model': ['auth.User', 'core.Tenant', 'raffles.Raffle', 'raffles.Order', 'whatsapp.WhatsAppContact'],
+    'search_model': ['auth.User', 'core.Tenant', 'raffles.Raffle', 'raffles.Order', 'whatsapp.WhatsAppContact', 'appointments.Service', 'appointments.Customer', 'appointments.Appointment', 'payments.PaymentTransaction'],
     'topmenu_links': [
         {'name': 'Home',  'url': 'admin:index', 'permissions': ['auth.view_user']},
         {'name': 'API Docs', 'url': '/api/', 'new_window': True},
@@ -213,6 +215,10 @@ JAZZMIN_SETTINGS = {
         'raffles.OrderTicket': 'fas fa-receipt',
         'whatsapp.WhatsAppContact': 'fab fa-whatsapp',
         'whatsapp.InboundMessage': 'fas fa-envelope',
+        'appointments.Service': 'fas fa-concierge-bell',
+        'appointments.Customer': 'fas fa-user-friends',
+        'appointments.Appointment': 'fas fa-calendar-check',
+        'payments.PaymentTransaction': 'fas fa-credit-card',
     },
     'default_icon_parents': 'fas fa-chevron-circle-right',
     'default_icon_children': 'fas fa-circle',
