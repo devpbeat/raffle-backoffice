@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_spectacular',
+    'apps.core',
     'apps.whatsapp',
     'apps.raffles',
 ]
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.core.middleware.TenantMiddleware',  # Tenant identification
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -193,7 +195,7 @@ JAZZMIN_SETTINGS = {
     'welcome_sign': 'Bienvenido al Panel de Administración de Rifas',
     'copyright': 'Rifas Backoffice',
     'language_chooser': True,
-    'search_model': ['auth.User', 'raffles.Raffle', 'raffles.Order', 'whatsapp.WhatsAppContact'],
+    'search_model': ['auth.User', 'core.Tenant', 'raffles.Raffle', 'raffles.Order', 'whatsapp.WhatsAppContact'],
     'topmenu_links': [
         {'name': 'Home',  'url': 'admin:index', 'permissions': ['auth.view_user']},
         {'name': 'API Docs', 'url': '/api/', 'new_window': True},
@@ -204,6 +206,7 @@ JAZZMIN_SETTINGS = {
         'auth': 'fas fa-users-cog',
         'auth.user': 'fas fa-user',
         'auth.Group': 'fas fa-users',
+        'core.Tenant': 'fas fa-building',
         'raffles.Raffle': 'fas fa-ticket-alt',
         'raffles.TicketNumber': 'fas fa-list-ol',
         'raffles.Order': 'fas fa-shopping-cart',

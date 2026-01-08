@@ -6,6 +6,13 @@ from decimal import Decimal
 
 
 class Raffle(models.Model):
+    tenant = models.ForeignKey(
+        'core.Tenant',
+        on_delete=models.CASCADE,
+        related_name='raffles',
+        verbose_name=_('tenant'),
+        db_index=True
+    )
     title = models.CharField(_('título'), max_length=255)
     description = models.TextField(_('descripción'), blank=True)
     ticket_price = models.DecimalField(
@@ -28,6 +35,7 @@ class Raffle(models.Model):
         verbose_name_plural = _('Rifas')
         ordering = ['-created_at']
         indexes = [
+            models.Index(fields=['tenant', 'is_active', '-created_at']),
             models.Index(fields=['is_active', '-created_at']),
         ]
 
@@ -130,6 +138,13 @@ class OrderStatus(models.TextChoices):
 
 
 class Order(models.Model):
+    tenant = models.ForeignKey(
+        'core.Tenant',
+        on_delete=models.CASCADE,
+        related_name='orders',
+        verbose_name=_('tenant'),
+        db_index=True
+    )
     raffle = models.ForeignKey(
         Raffle,
         on_delete=models.CASCADE,
@@ -167,6 +182,8 @@ class Order(models.Model):
         verbose_name_plural = _('Órdenes')
         ordering = ['-created_at']
         indexes = [
+            models.Index(fields=['tenant', 'status', '-created_at']),
+            models.Index(fields=['tenant', '-created_at']),
             models.Index(fields=['status', '-created_at']),
             models.Index(fields=['contact', '-created_at']),
             models.Index(fields=['raffle', '-created_at']),

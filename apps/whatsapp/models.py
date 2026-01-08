@@ -13,6 +13,13 @@ class ContactState(models.TextChoices):
 
 
 class WhatsAppContact(models.Model):
+    tenant = models.ForeignKey(
+        'core.Tenant',
+        on_delete=models.CASCADE,
+        related_name='whatsapp_contacts',
+        verbose_name=_('tenant'),
+        db_index=True
+    )
     wa_id = models.CharField(_('ID de WhatsApp'), max_length=50, unique=True, db_index=True)
     name = models.CharField(_('nombre'), max_length=255, null=True, blank=True)
     state = models.CharField(
@@ -32,6 +39,7 @@ class WhatsAppContact(models.Model):
         verbose_name_plural = _('Contactos de WhatsApp')
         ordering = ['-last_interaction_at']
         indexes = [
+            models.Index(fields=['tenant', '-last_interaction_at']),
             models.Index(fields=['-last_interaction_at']),
             models.Index(fields=['state', '-last_interaction_at']),
         ]

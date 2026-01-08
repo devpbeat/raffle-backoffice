@@ -21,16 +21,27 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, Sp
 from apps.whatsapp.views import webhook_verify
 
 urlpatterns = [
-    # WhatsApp Webhook (both GET for verification and POST for messages)
+    # WhatsApp Webhook (tenant-agnostic - Meta sends to specific URL)
     path('whatsapp/webhook/', webhook_verify, name='whatsapp_webhook_verify'),
     path('whatsapp/', include('apps.whatsapp.urls')),
 
-    # API Schema & Documentation
+    # Global API Schema & Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 
-    # API endpoints
+    # Tenant-scoped URLs
+    path('tenant/<slug:tenant_slug>/', include([
+        # Tenant-scoped API endpoints
+        path('api/', include([
+            path('raffles/', include('apps.raffles.urls')),
+            path('whatsapp/', include('apps.whatsapp.api_urls')),
+            # Future: appointments, payments, etc. will be added here
+        ])),
+    ])),
+
+    # Backward compatibility: Global API endpoints (no tenant) for existing integrations
+    # These will use the default tenant or require migration
     path('api/', include('apps.raffles.urls')),
     path('api/whatsapp/', include('apps.whatsapp.api_urls')),
 
@@ -39,6 +50,7 @@ urlpatterns = [
 ]
 
 # Add i18n support for admin
+# Global admin for superusers to manage tenants and cross-tenant operations
 urlpatterns += i18n_patterns(
     path('admin/', admin.site.urls),
     prefix_default_language=False,
