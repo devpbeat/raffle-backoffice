@@ -1,10 +1,30 @@
+# Python
 .venv
-.env
+venv/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.so
+.Python
+
+# Django
+.env
 *.sqlite3
 *.log
+db.sqlite3
+staticfiles/
+media/
+
+# IDE
 .DS_Store
 .idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/

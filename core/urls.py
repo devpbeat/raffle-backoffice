@@ -15,8 +15,31 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.conf.urls.i18n import i18n_patterns
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from apps.whatsapp.views import webhook_verify
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    # WhatsApp Webhook (both GET for verification and POST for messages)
+    path('whatsapp/webhook/', webhook_verify, name='whatsapp_webhook_verify'),
+    path('whatsapp/', include('apps.whatsapp.urls')),
+
+    # API Schema & Documentation
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+
+    # API endpoints
+    path('api/', include('apps.raffles.urls')),
+    path('api/whatsapp/', include('apps.whatsapp.api_urls')),
+
+    # i18n language switching
+    path('i18n/', include('django.conf.urls.i18n')),
 ]
+
+# Add i18n support for admin
+urlpatterns += i18n_patterns(
+    path('admin/', admin.site.urls),
+    prefix_default_language=False,
+)
